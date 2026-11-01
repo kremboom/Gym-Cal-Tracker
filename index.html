@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>30-Day Personalized Physique Recomp</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --accent-hover: #0284c7;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 1rem;
+            max-width: 900px;
+            margin: 0 auto;
+            padding-bottom: 3rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: var(--accent);
+            margin-bottom: 0.25rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .reset-profile-btn {
+            position: absolute;
+            top: 1rem;
+            right: 0;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        /* Modal Questionnaire */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .modal-card h2 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-size: 1.4rem;
+        }
+
+        .modal-card p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.7rem;
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+
+        /* Nav Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab-btn {
+            background: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.2rem;
+            border: 1px solid var(--border);
+            margin-bottom: 1.2rem;
+        }
+
+        .card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Day Selector */
+        .day-selector {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .day-selector select, .day-selector input {
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.6rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            margin-bottom: 0;
+        }
+
+        /* Workout Split Selector Pills */
+        .split-pills {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .pill {
+            flex: 1;
+            padding: 0.5rem;
+            text-align: center;
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .pill.active {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Workout Routine List */
+        .routine-list {
+            list-style: none;
+        }
+
+        .routine-item {
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            padding: 0.9rem;
+            border-radius: 8px;
+            margin-bottom: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .exercise-info h4 {
+            font-size: 1rem;
+            color: var(--text-main);
+            margin-bottom: 0.2rem;
+        }
+
+        .exercise-info p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .set-badge {
+            display: inline-block;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--accent);
+            font-size: 0.75rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            margin-left: 0.3rem;
+        }
+
+        .weight-input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .weight-input-group input {
+            width: 80px;
+            padding: 0.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        button.btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 0.75rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        button.btn:hover {
+            background: var(--accent-hover);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Onboarding Modal Question Form -->
+    <div id="onboardingModal" class="modal-overlay" style="display:none;">
+        <div class="modal-card">
+            <h2>Welcome to Your Tracker</h2>
+            <p>Answer a few quick questions to generate your custom 30-day program and tracking graphs.</p>
+            
+            <form onsubmit="generateProfile(event)">
+                <div class="form-group">
+                    <label>Your Name</label>
+                    <input type="text" id="userNameInput" placeholder="e.g. Alex" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Current Body Weight (lbs)</label>
+                    <input type="number" id="userWeightInput" placeholder="155" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Primary Fitness Goal</label>
+                    <select id="userGoalInput" required>
+                        <option value="recomp">Physique Recomposition (Build Muscle & Cut Fat)</option>
+                        <option value="hypertrophy">Pure Muscle Growth (Hypertrophy Focus)</option>
+                        <option value="strength">Maximum Strength & Power</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Training Experience</label>
+                    <select id="userExpInput" required>
+                        <option value="beginner">Beginner (1-3 Days/Week)</option>
+                        <option value="intermediate" selected>Intermediate (Push/Pull/Legs 3-Day Rotation)</option>
+                        <option value="advanced">Advanced (High Volume)</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn">Generate My Custom Program</button>
+            </form>
+        </div>
+    </div>
+
+    <header>
+        <button class="reset-profile-btn" onclick="resetUserProfile()">⚙ Edit Goals</button>
+        <h1 id="headerTitle">30-Day Physique Tracker</h1>
+        <p id="headerSubtitle">Personalized Training & Recomp Dashboard</p>
+    </header>
+
+    <!-- Navigation -->
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('workout')">Gym Routine</button>
+        <button class="tab-btn" onclick="switchTab('analytics')">Strength & Weight Analytics</button>
+    </div>
+
+    <!-- Active Day & Body Weight Tracker Header -->
+    <div class="card">
+        <div class="day-selector">
+            <div style="flex: 1;">
+                <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.2rem;">Select Day:</label>
+                <select id="activeDaySelect" style="width: 100%;" onchange="changeActiveDay()"></select>
+            </div>
+            <div style="flex: 1;">
+                <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.2rem;">Body Weight (lbs):</label>
+                <input type="number" id="bodyWeightInput" style="width: 100%;" placeholder="152" onchange="saveBodyWeight()">
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 1: GYM ROUTINE -->
+    <div id="workout" class="tab-content active">
+        <div class="card">
+            <h2>
+                <span id="workoutSplitTitle">Push Day Routine</span>
+                <span style="font-size:0.8rem; color:var(--text-muted); font-weight:normal;">Target: 10 Reps / Set</span>
+            </h2>
+
+            <!-- Split Selector Pills -->
+            <div class="split-pills">
+                <div id="pill-push" class="pill" onclick="setSplit('Push')">Push (Chest/Shoulders/Triceps)</div>
+                <div id="pill-pull" class="pill" onclick="setSplit('Pull')">Pull (Back/Biceps)</div>
+                <div id="pill-legs" class="pill" onclick="setSplit('Legs')">Legs & Core</div>
+            </div>
+
+            <ul id="routineList" class="routine-list"></ul>
+        </div>
+    </div>
+
+    <!-- TAB 2: STRENGTH & WEIGHT ANALYTICS -->
+    <div id="analytics" class="tab-content">
+        <div class="card">
+            <h2>Body Weight Trend (30 Days)</h2>
+            <div style="height: 250px; position: relative;">
+                <canvas id="weightChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Strength Progress (Working Weight Tracker)</h2>
+            <div style="height: 280px; position: relative;">
+                <canvas id="strengthChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Preset Workout Base Exercises
+        const baseTemplates = {
+            recomp: {
+                Push: [
+                    { name: "Barbell / Dumbbell Bench Press", sets: 4 },
+                    { name: "Incline Dumbbell Press", sets: 3 },
+                    { name: "Overhead Dumbbell Shoulder Press", sets: 3 },
+                    { name: "Cable / Dumbbell Lateral Raises", sets: 4 },
+                    { name: "Tricep Rope Pushdowns", sets: 3 }
+                ],
+                Pull: [
+                    { name: "Lat Pulldown / Pull-ups", sets: 4 },
+                    { name: "Barbell / Chest-Supported Rows", sets: 4 },
+                    { name: "Face Pulls / Rear Delt Flyes", sets: 3 },
+                    { name: "Barbell / Dumbbell Bicep Curls", sets: 3 },
+                    { name: "Hammer Curls", sets: 3 }
+                ],
+                Legs: [
+                    { name: "Barbell Squats / Leg Press", sets: 4 },
+                    { name: "Romanian Deadlifts (RDLs)", sets: 3 },
+                    { name: "Leg Extensions", sets: 3 },
+                    { name: "Hamstring Lying Leg Curls", sets: 3 },
+                    { name: "Standing Calf Raises", sets: 4 },
+                    { name: "Hanging Leg Raises / Ab Curls", sets: 3 }
+                ]
+            },
+            hypertrophy: {
+                Push: [
+                    { name: "Incline Barbell Bench Press", sets: 4 },
+                    { name: "Flat Dumbbell Flyes / Cable Flyes", sets: 4 },
+                    { name: "Seated Dumbbell Shoulder Press", sets: 4 },
+                    { name: "Lateral Raises (Constant Tension)", sets: 4 },
+                    { name: "Overhead Tricep Extension", sets: 4 }
+                ],
+                Pull: [
+                    { name: "Wide Grip Lat Pulldown", sets: 4 },
+                    { name: "Single Arm Dumbbell Row", sets: 4 },
+                    { name: "Seated Cable Rows", sets: 3 },
+                    { name: "Incline Dumbbell Bicep Curls", sets: 4 },
+                    { name: "Preacher Curls", sets: 3 }
+                ],
+                Legs: [
+                    { name: "Hack Squat / Leg Press", sets: 4 },
+                    { name: "Walking Dumbbell Lunges", sets: 3 },
+                    { name: "Leg Extensions", sets: 4 },
+                    { name: "Seated Leg Curls", sets: 4 },
+                    { name: "Seated Calf Raises", sets: 4 }
+                ]
+            },
+            strength: {
+                Push: [
+                    { name: "Heavy Barbell Bench Press", sets: 5 },
+                    { name: "Overhead Barbell Press", sets: 4 },
+                    { name: "Weighted Dips", sets: 3 },
+                    { name: "Close Grip Bench Press", sets: 3 }
+                ],
+                Pull: [
+                    { name: "Barbell Deadlift", sets: 4 },
+                    { name: "Heavy Pendlay Rows", sets: 4 },
+                    { name: "Weighted Pull-ups", sets: 4 },
+                    { name: "Heavy Barbell Curls", sets: 3 }
+                ],
+                Legs: [
+                    { name: "Heavy Barbell Back Squats", sets: 5 },
+                    { name: "Barbell Romanian Deadlifts", sets: 4 },
+                    { name: "Bulgarian Split Squats", sets: 3 },
+                    { name: "Standing Heavy Calf Raises", sets: 4 }
+                ]
+            }
+        };
+
+        let userProfile = JSON.parse(localStorage.getItem('userProfileData')) || null;
+        let trackerData = JSON.parse(localStorage.getItem('recompTrackerDataInteractive')) || {};
+        let activeDay = 1;
+
+        let weightChartInstance = null;
+        let strengthChartInstance = null;
+
+        window.onload = function() {
+            if (!userProfile) {
+                document.getElementById('onboardingModal').style.display = 'flex';
+            } else {
+                initApp();
+            }
+        };
+
+        function generateProfile(e) {
+            e.preventDefault();
+            userProfile = {
+                name: document.getElementById('userNameInput').value,
+                weight: parseFloat(document.getElementById('userWeightInput').value) || 150,
+                goal: document.getElementById('userGoalInput').value,
+                exp: document.getElementById('userExpInput').value
+            };
+
+            localStorage.setItem('userProfileData', JSON.stringify(userProfile));
+            document.getElementById('onboardingModal').style.display = 'none';
+
+            // Build fresh 30-day program based on user choices
+            buildProgramData();
+            initApp();
+        }
+
+        function resetUserProfile() {
+            document.getElementById('onboardingModal').style.display = 'flex';
+        }
+
+        function getDefaultSplitForDay(dayNum) {
+            const rem = (dayNum - 1) % 3;
+            if (rem === 0) return 'Push';
+            if (rem === 1) return 'Pull';
+            return 'Legs';
+        }
+
+        function buildProgramData() {
+            const goalTemplates = baseTemplates[userProfile.goal] || baseTemplates.recomp;
+            trackerData = {};
+
+            for (let i = 1; i <= 30; i++) {
+                const daySplit = getDefaultSplitForDay(i);
+                trackerData[i] = {
+                    bodyWeight: userProfile.weight,
+                    split: daySplit,
+                    exercises: goalTemplates[daySplit].map(ex => ({ ...ex, weight: 0 }))
+                };
+            }
+            saveData();
+        }
+
+        function initApp() {
+            // Check if trackerData exists
+            if (Object.keys(trackerData).length === 0) {
+                buildProgramData();
+            }
+
+            // Header Display Updates
+            document.getElementById('headerTitle').innerText = `${userProfile.name}'s 30-Day ${userProfile.goal.toUpperCase()} Tracker`;
+            document.getElementById('headerSubtitle').innerText = `Start Weight: ${userProfile.weight} lbs | Goal: ${userProfile.goal.toUpperCase()} | Experience: ${userProfile.exp.toUpperCase()}`;
+
+            populateDaySelector();
+            renderActiveDay();
+            initCharts();
+        }
+
+        function saveData() {
+            localStorage.setItem('recompTrackerDataInteractive', JSON.stringify(trackerData));
+            updateCharts();
+        }
+
+        function populateDaySelector() {
+            const select = document.getElementById('activeDaySelect');
+            select.innerHTML = '';
+            for (let i = 1; i <= 30; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.innerText = `Day ${i}`;
+                select.appendChild(opt);
+            }
+            select.value = activeDay;
+        }
+
+        function changeActiveDay() {
+            activeDay = parseInt(document.getElementById('activeDaySelect').value);
+            renderActiveDay();
+        }
+
+        function setSplit(splitName) {
+            const goalTemplates = baseTemplates[userProfile.goal] || baseTemplates.recomp;
+            trackerData[activeDay].split = splitName;
+            trackerData[activeDay].exercises = goalTemplates[splitName].map(ex => ({ ...ex, weight: 0 }));
+            saveData();
+            renderActiveDay();
+        }
+
+        function renderActiveDay() {
+            const dayData = trackerData[activeDay];
+            document.getElementById('bodyWeightInput').value = dayData.bodyWeight || userProfile.weight;
+
+            // Update Split Pills
+            document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+            const currentSplit = dayData.split || 'Push';
+            document.getElementById(`pill-${currentSplit.toLowerCase()}`).classList.add('active');
+            document.getElementById('workoutSplitTitle').innerText = `${currentSplit} Day Routine`;
+
+            // Render Exercises
+            const listEl = document.getElementById('routineList');
+            listEl.innerHTML = '';
+
+            dayData.exercises.forEach((ex, idx) => {
+                listEl.innerHTML += `
+                    <li class="routine-item">
+                        <div class="exercise-info">
+                            <h4>${ex.name} <span class="set-badge">${ex.sets} Sets</span></h4>
+                            <p>Target Reps: <strong>10</strong></p>
+                        </div>
+                        <div class="weight-input-group">
+                            <input type="number" value="${ex.weight}" placeholder="lbs" onchange="updateWeight(${idx}, this.value)">
+                            <span style="font-size:0.85rem; color:var(--text-muted);">lbs</span>
+                        </div>
+                    </li>
+                `;
+            });
+        }
+
+        function updateWeight(exIndex, val) {
+            trackerData[activeDay].exercises[exIndex].weight = parseFloat(val) || 0;
+            saveData();
+        }
+
+        function saveBodyWeight() {
+            const val = parseFloat(document.getElementById('bodyWeightInput').value) || userProfile.weight;
+            trackerData[activeDay].bodyWeight = val;
+            saveData();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Charts Setup
+        function initCharts() {
+            const labels = Array.from({length: 30}, (_, i) => `Day ${i+1}`);
+
+            // Weight Chart
+            const weightCtx = document.getElementById('weightChart').getContext('2d');
+            if (weightChartInstance) weightChartInstance.destroy();
+
+            weightChartInstance = new Chart(weightCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Body Weight (lbs)',
+                        data: getWeightArray(),
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        fill: true,
+                        tension: 0.2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+                    },
+                    plugins: { legend: { labels: { color: '#f8fafc' } } }
+                }
+            });
+
+            // Strength Chart
+            const strengthCtx = document.getElementById('strengthChart').getContext('2d');
+            if (strengthChartInstance) strengthChartInstance.destroy();
+
+            strengthChartInstance = new Chart(strengthCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: getStrengthDatasets()
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+                    },
+                    plugins: { legend: { labels: { color: '#f8fafc' } } }
+                }
+            });
+        }
+
+        function getWeightArray() {
+            let arr = [];
+            for (let i = 1; i <= 30; i++) {
+                arr.push(trackerData[i] ? trackerData[i].bodyWeight : (userProfile ? userProfile.weight : 150));
+            }
+            return arr;
+        }
+
+        function getStrengthDatasets() {
+            let pushWeights = [];
+            let pullWeights = [];
+            let legWeights = [];
+
+            for (let d = 1; d <= 30; d++) {
+                const day = trackerData[d];
+                pushWeights.push((day && day.split === 'Push' && day.exercises[0]) ? day.exercises[0].weight : null);
+                pullWeights.push((day && day.split === 'Pull' && day.exercises[0]) ? day.exercises[0].weight : null);
+                legWeights.push((day && day.split === 'Legs' && day.exercises[0]) ? day.exercises[0].weight : null);
+            }
+
+            return [
+                { label: 'Push Primary Lift (lbs)', data: pushWeights, borderColor: '#38bdf8', spanGaps: true, tension: 0.2 },
+                { label: 'Pull Primary Lift (lbs)', data: pullWeights, borderColor: '#22c55e', spanGaps: true, tension: 0.2 },
+                { label: 'Legs Primary Lift (lbs)', data: legWeights, borderColor: '#f59e0b', spanGaps: true, tension: 0.2 }
+            ];
+        }
+
+        function updateCharts() {
+            if (weightChartInstance) {
+                weightChartInstance.data.datasets[0].data = getWeightArray();
+                weightChartInstance.update();
+            }
+            if (strengthChartInstance) {
+                const updatedDatasets = getStrengthDatasets();
+                strengthChartInstance.data.datasets.forEach((ds, i) => {
+                    if (updatedDatasets[i]) ds.data = updatedDatasets[i].data;
+                });
+                strengthChartInstance.update();
+            }
+        }
+    </script>
+</body>
+</html>
